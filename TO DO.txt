@@ -1,0 +1,27 @@
+- ADIONAR FUNÇÃO ADD TRANSAÇÕES
+
+-SERVICE DE TRANSAÇÃO
+-SERVICE DE CARTÃO (OU NÃO)
+
+-FAZER TESTES DE UNIDADE
+
+exemplo de teste de função de soma:
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+public class MyServiceTests {
+
+    @Autowired
+    private MyService myService;
+
+    @Test
+    public void testAdd() {
+        int result = myService.add(2, 3);
+        assertEquals(5, result, "The add method should correctly add two numbers.");
+    }
+}
