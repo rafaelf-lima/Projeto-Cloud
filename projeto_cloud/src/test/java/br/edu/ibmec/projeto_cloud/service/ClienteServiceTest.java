@@ -9,7 +9,6 @@ import br.edu.ibmec.projeto_cloud.model.Cliente;
 // import br.edu.ibmec.projeto_cloud.model.Cartao;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 @SpringBootTest
 public class ClienteServiceTest {
@@ -24,15 +23,22 @@ public class ClienteServiceTest {
         cliente.setNome("João");
         cliente.setCpf("123.456.789-09");
         cliente.setEmail("joao@teste.com");
+        cliente.setEndereco("Rua 1 casa B");
         cliente.setTelefone("123456789");
         cliente.setDataNascimento(LocalDate.of(1990, 1, 1));
 
         // Act
         Cliente resultado = service.createCliente(cliente);
-        UUID id = resultado.getId();
+        int id = resultado.getId();
 
         // Assert
         Assertions.assertNotNull(resultado);
+        Assertions.assertNotNull(resultado.getNome());
+        Assertions.assertNotNull(resultado.getCpf());
+        Assertions.assertNotNull(resultado.getEmail());
+        Assertions.assertNotNull(resultado.getEndereco());
+        Assertions.assertNotNull(resultado.getTelefone());
+        Assertions.assertNotNull(resultado.getDataNascimento());
         Assertions.assertEquals(id, cliente.getId());
     }
 

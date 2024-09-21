@@ -1,66 +1,98 @@
 package br.edu.ibmec.projeto_cloud.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import br.edu.ibmec.projeto_cloud.repository.ClienteRepository;
+import br.edu.ibmec.projeto_cloud.repository.CartaoRepository;
 import br.edu.ibmec.projeto_cloud.model.Cliente;
 import br.edu.ibmec.projeto_cloud.model.Cartao;
 
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+import java.util.Optional;
 
 @Service
 public class ClienteService {
-    private static List<Cliente> Clientes = new ArrayList<>();
+    @Autowired
+    private ClienteRepository clienteRepository;
 
-    public List<Cliente> getAllItems() {
-        return ClienteService.Clientes;
-    }
+    @Autowired
+    private CartaoRepository cartaoRepository;
 
-    public Cliente buscaCliente(UUID id) {
-        return findCliente(id);
-    }
 
     public Cliente createCliente(Cliente cliente) throws Exception {
+        // Busca a lista de clientes
+        List<Cliente> Clientes = clienteRepository.findAll();
+
+        // Remove caracteres não numéricos do CPF
         String cpfFormatado = cliente.getCpf().replaceAll("\\D", "");
+
+        // Verifica se o CPF é válido
         if (!validarCPF(cliente.getCpf())) {
             throw new Exception("CPF inválido.");
         }
+
+        // Verifica se o CPF já está cadastrado
         for (Cliente c : Clientes) {
             String cpfExistente = c.getCpf().replaceAll("\\D", "");
             if (cpfExistente.equals(cpfFormatado)) {
                 throw new Exception("Já existe um cliente com esse CPF.");
             }
         }
+
+        // Verifica se o cliente é maior de idade
         if (!eMaiorDeIdade(cliente.getDataNascimento())){
             throw new Exception("Você deve ser maior de 18 anos");
         }
-        cliente.setId(UUID.randomUUID());
+
+        // Formata CPF do cliente
         cliente.setCpf(cpfFormatado);
-        ClienteService.Clientes.add(cliente);
+        
+        // Salva cliente na Base de dados
+        clienteRepository.save(cliente);
+
         return cliente;
     }
 
-    public Cliente associarCartao(Cartao cartao, UUID id) throws Exception {
+    public Cliente associarCartao(Cartao cartao, int id) throws Exception {
+        // Busca o cliente
         Cliente cliente = this.findCliente(id);
+
+        // Verifica se o cliente existe
         if (cliente == null) {
             throw new Exception("Cliente não encontrado");
         }
+
+        // Verifica se o cartão está ativado
+        if (cartao.getEstaAtivado() == false) {
+            throw new Exception("Cartão não está ativado");
+        }
+        
+        // Associa o cartão ao cliente
         cliente.associarCartao(cartao);
+
+        // Salvar cartão no repositório
+        cartaoRepository.save(cartao);
+
+        // Atualiza o cliente com novo cartão no repositório
+        clienteRepository.save(cliente);
+
         return cliente;
     }
 
-    private Cliente findCliente(UUID id) {
-        Cliente response = null;
+    public Cliente buscaCliente(int id) {
+        return findCliente(id);
+    }
 
-        for (Cliente cliente : Clientes) {
-            if (cliente.getId().equals(id)) {
-                response = cliente;
-                break;
-            }
-        }
-        return response;
+    private Cliente findCliente(int id) {
+        Optional<Cliente> usuario = clienteRepository.findById(id);
+
+        if (usuario.isEmpty())
+            return null;
+
+        return usuario.get();
     }
 
     public boolean validarCPF(String cpf) {
@@ -103,4 +135,6 @@ public class ClienteService {
     public boolean eMaiorDeIdade(LocalDate dataNascimento){
         return Period.between(dataNascimento, LocalDate.now()).getYears() >= 18;
     }
+
+    // enviarNotificacaoSobreAssociacaoDeCartao
 }

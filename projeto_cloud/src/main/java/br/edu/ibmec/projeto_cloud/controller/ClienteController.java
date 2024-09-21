@@ -10,23 +10,27 @@ import br.edu.ibmec.projeto_cloud.service.ClienteService;
 import br.edu.ibmec.projeto_cloud.model.Cliente;
 import br.edu.ibmec.projeto_cloud.model.Cartao;
 
+import br.edu.ibmec.projeto_cloud.repository.ClienteRepository;
+
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/cliente")
 public class ClienteController {
+    @Autowired
+    private ClienteRepository clienteRepository;
 
     @Autowired
     private ClienteService service;
 
     @GetMapping
     public ResponseEntity<List<Cliente>> getCliente() {
-        return new ResponseEntity<>(service.getAllItems(), HttpStatus.OK);
+        List<Cliente> Clientes = clienteRepository.findAll();
+        return new ResponseEntity<>(Clientes, HttpStatus.OK);
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<Cliente> getClienteById(@PathVariable("id") UUID id) {
+    public ResponseEntity<Cliente> getClienteById(@PathVariable("id") int id) {
         Cliente response = service.buscaCliente(id);
         if (response == null)
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -36,13 +40,15 @@ public class ClienteController {
     @PostMapping
     public ResponseEntity<Cliente> saveCliente(@Valid @RequestBody Cliente cliente) throws Exception {
         Cliente response = service.createCliente(cliente);
+        // clienteRepository.save(cliente);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @PostMapping("{id}/associar-cartao")
-    public ResponseEntity<Cliente> getClienteById(@PathVariable("id") UUID id, @Valid @RequestBody Cartao cartao) throws Exception {
+    public ResponseEntity<Cliente> getClienteById(@PathVariable("id") int id, @Valid @RequestBody Cartao cartao) throws Exception {
         Cliente response = service.associarCartao(cartao, id);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    // enviarNotificacaoSobreAssociacaoDeCartao
 }
