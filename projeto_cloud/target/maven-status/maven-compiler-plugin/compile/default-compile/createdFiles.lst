@@ -1,6 +1,0 @@
-br\edu\ibmec\projeto_cloud\model\Cartao.class
-br\edu\ibmec\projeto_cloud\model\Cliente.class
-br\edu\ibmec\projeto_cloud\ProjetoCloudApplication.class
-br\edu\ibmec\projeto_cloud\model\Transacao.class
-br\edu\ibmec\projeto_cloud\controller\ClienteController.class
-br\edu\ibmec\projeto_cloud\service\ClienteService.class
