@@ -1,0 +1,71 @@
+Template GET localhost:8080/cliente
+{}
+Resultado (200 OK): recuperar todos os clientes da base
+Testes: -
+
+Template POST localhost:8080/cliente
+{
+    "nome": "Ivo",
+    "cpf": "123.456.789-09",
+    "email": "asc12345@bb.com",
+    "telefone": "998880000",
+    "endereco": "Rua A apto 104",
+    "dataNascimento": "1997-03-07"
+}
+Resultado (201 Created/400 Bad Request/500 Internal Server Error): salvar os dados do cliente na base de dados
+Testes: resultado, nome, cpf, email, endereco, telefone, dataNascimento notNull
+	cpf válido
+	cpf unique
+	dataNascimento -> idade +18
+
+Template GET localhost:8080/cliente/{id}
+{}
+Resultado (200 OK/404 Not Found): recuperar cliente com id {id}
+Testes: -
+
+Template POST localhost:8080/cliente/{id}/associar-cartao
+{
+    "numeroCartao": 1234123412345698,
+    "dataValidade": "2026-08-08",
+    "cvv": 147,
+    "limite": 10000.00,
+    "saldo": 10000.00,
+    "estaAtivado": true
+}
+Resultado (201 Created/400 Bad Request/500 Internal Server Error): salvar cartão com id 1 para o cliente com id {id}
+Testes: cliente_id {id} existe
+	cartao_numeroCartao unique
+	cartao_estaAtivado true
+	cartao_dataValidade > today()
+	cvv int com 3 dígitos ou varchar(3)
+	limite > 0
+	saldo > 0
+
+
+--------------------------------------------
+Template GET localhost:8080/transacao
+{}
+Resultado (200 OK): recuperar todas as transações da base de dados
+Testes: -
+
+Template GET localhost:8080/transacao/{id}
+{}
+Resultado (200 OK/404 Not Found): recuperar a transação com id {id}
+Teste: -
+
+Template GET localhost:8080/transacao/cartao/{id}
+{}
+Resultado (200 OK/404 Not Found/500 Internal Server Error): recuperar todas as transações do cartão com id {id}
+Testes: -
+
+Template POST localhost:8080/transacao/cartao/{id}
+{
+    "dataTransacao": "2024-08-08T12:50:59",
+    "valor": 250.55,
+    "comerciante": "Amazon"
+}
+Resultado (201 Created/400 Bad Request/500 Internal Server Error): salvar transação no cartão com id {id}
+Testes: valor > 0
+	dataTransacao > today()
+	comerciante (?)
+	*Não pode duplicidade (mesma transação dentro de 2 minutos)

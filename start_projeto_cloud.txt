@@ -1,0 +1,12 @@
+https://web.postman.co
+https://swagger.io/
+https://start.spring.io/
+ - maven
+ - spring 3.3.3
+ - dependencies:
+    - Lombok
+    - Spring Web
+    - Spring Boot DevTools
+    - Validation
+    - MySQL Driver
+    - Spring Data JPA
