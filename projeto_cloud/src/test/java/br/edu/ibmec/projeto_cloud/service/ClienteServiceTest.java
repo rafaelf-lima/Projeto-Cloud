@@ -21,7 +21,7 @@ public class ClienteServiceTest {
         // Arrange
         Cliente cliente = new Cliente();
         cliente.setNome("João");
-        cliente.setCpf("123.456.789-09");
+        cliente.setCpf("987-654-321-00");
         cliente.setEmail("joao@teste.com");
         cliente.setEndereco("Rua 1 casa B");
         cliente.setTelefone("123456789");
