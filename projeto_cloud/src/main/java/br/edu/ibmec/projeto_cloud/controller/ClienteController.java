@@ -43,7 +43,7 @@ public class ClienteController {
     }
 
     @PostMapping("{id}/associar-cartao")
-    public ResponseEntity<Cliente> getClienteById(@PathVariable("id") int id, @Valid @RequestBody Cartao cartao) throws Exception {
+    public ResponseEntity<Cliente> associarCartaoAoCliente(@PathVariable("id") int id, @Valid @RequestBody Cartao cartao) throws Exception {
         Cliente response = service.associarCartao(cartao, id);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
