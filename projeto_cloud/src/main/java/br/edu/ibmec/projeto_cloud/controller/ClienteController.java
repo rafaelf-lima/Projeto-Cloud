@@ -6,11 +6,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
+import br.edu.ibmec.projeto_cloud.repository.ClienteRepository;
 import br.edu.ibmec.projeto_cloud.service.ClienteService;
 import br.edu.ibmec.projeto_cloud.model.Cliente;
 import br.edu.ibmec.projeto_cloud.model.Cartao;
-
-import br.edu.ibmec.projeto_cloud.repository.ClienteRepository;
 
 import java.util.List;
 
@@ -40,7 +39,6 @@ public class ClienteController {
     @PostMapping
     public ResponseEntity<Cliente> saveCliente(@Valid @RequestBody Cliente cliente) throws Exception {
         Cliente response = service.createCliente(cliente);
-        // clienteRepository.save(cliente);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
