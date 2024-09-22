@@ -48,7 +48,7 @@ public class Cartao {
 
     @OneToMany
     @JoinColumn(referencedColumnName = "id", name = "cartao_id")
-    private List<Transacao> transacoes;
+    public List<Transacao> transacoes;
 
     public void adicionarTransacao(Transacao transacao) {
         this.transacoes.add(transacao);
