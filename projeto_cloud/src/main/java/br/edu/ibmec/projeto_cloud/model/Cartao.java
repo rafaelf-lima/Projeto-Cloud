@@ -46,7 +46,7 @@ public class Cartao {
     @NotNull(message = "Status do cartão é obrigatório")
     private Boolean estaAtivado;
 
-    @OneToMany
+    @OneToMany(fetch= FetchType.EAGER)
     @JoinColumn(referencedColumnName = "id", name = "cartao_id")
     public List<Transacao> transacoes;
 
