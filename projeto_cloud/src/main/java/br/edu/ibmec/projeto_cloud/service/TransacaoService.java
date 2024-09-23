@@ -38,6 +38,10 @@ public class TransacaoService {
             throw new Exception("Cartão inativo.");
         }
 
+        if (cartao.getSaldo() < transacao.getValor()) {
+            throw new Exception("Cartão sem limite para a compra");
+        }
+
         // Busca por transações com o mesmo valor e comerciante
         List<Transacao> transacoesComMesmoValorEComerciante = transacaoRepository.findByValorAndComerciante(
             transacao.getValor(), transacao.getComerciante()
@@ -45,7 +49,7 @@ public class TransacaoService {
 
         // Verifica se existe alguma transação com dataTransacao a menos de 2 minutos de diferença
         for (Transacao transacaoExistente : transacoesComMesmoValorEComerciante) {
-            if (isWithinTwoMinutes(transacaoExistente.getDataTransacao(), transacao.getDataTransacao())) {
+            if (tempoTransacao(transacaoExistente.getDataTransacao(), transacao.getDataTransacao())) {
                 throw new Exception("Transação duplicada encontrada.");
             }
         }
@@ -55,13 +59,15 @@ public class TransacaoService {
         // Salva a transação no banco de dados
         transacaoRepository.save(transacao);
 
+        cartao.setSaldo(cartao.getSaldo() - transacao.getValor());
+
         // Salva o cartão no banco de dados
         cartaoRepository.save(cartao);
         
         return transacao;
     }
 
-    private boolean isWithinTwoMinutes(LocalDateTime dataTransacaoExistente, LocalDateTime dataTransacaoNova) {
+    private boolean tempoTransacao(LocalDateTime dataTransacaoExistente, LocalDateTime dataTransacaoNova) {
         // Calcula a diferença entre as duas datas
         Duration duration = Duration.between(dataTransacaoExistente, dataTransacaoNova);
 

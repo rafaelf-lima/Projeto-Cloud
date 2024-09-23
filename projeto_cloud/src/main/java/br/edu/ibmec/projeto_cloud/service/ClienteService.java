@@ -43,7 +43,7 @@ public class ClienteService {
         }
 
         // Verifica se o cliente é maior de idade
-        if (!eMaiorDeIdade(cliente.getDataNascimento())){
+        if (!verificaIdade(cliente.getDataNascimento())){
             throw new Exception("Você deve ser maior de 18 anos");
         }
 
@@ -132,8 +132,9 @@ public class ClienteService {
         }
     }
 
-    public boolean eMaiorDeIdade(LocalDate dataNascimento){
-        return Period.between(dataNascimento, LocalDate.now()).getYears() >= 18;
+    public boolean verificaIdade(LocalDate dataNascimento){
+        int idade = Period.between(dataNascimento, LocalDate.now()).getYears();
+        return idade >= 18;
     }
 
     // enviarNotificacaoSobreAssociacaoDeCartao
