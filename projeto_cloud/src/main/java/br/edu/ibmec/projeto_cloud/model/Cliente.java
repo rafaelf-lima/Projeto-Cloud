@@ -7,6 +7,7 @@ import java.util.List;
 import jakarta.validation.constraints.NotNull;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -48,7 +49,7 @@ public class Cliente {
     @NotBlank(message = "Endereço é obrigatório")
     private String endereco;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(referencedColumnName = "id", name = "cliente_id")
     private List<Cartao> cartoes = new ArrayList<>();
 

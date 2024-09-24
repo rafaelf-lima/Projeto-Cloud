@@ -24,7 +24,7 @@ public class TransacaoService {
 
     public Transacao createTransacao(Transacao transacao, int id) throws Exception {
 
-        Cartao cartao;
+        Cartao cartao = null;
 
         // Verifica se o cartão existe
         if (cartaoRepository.findById(id).isEmpty()) {

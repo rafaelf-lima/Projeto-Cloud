@@ -21,10 +21,10 @@ public class ClienteServiceTest {
         // Arrange
         Cliente cliente = new Cliente();
         cliente.setNome("João");
-        cliente.setCpf("123.456.789-09");
-        cliente.setEmail("joao@teste.com");
+        cliente.setCpf("123.456.229-46");
+        cliente.setEmail("joao@teste2.com");
         cliente.setEndereco("Rua 1 casa B");
-        cliente.setTelefone("123456789");
+        cliente.setTelefone("(21)123456789");
         cliente.setDataNascimento(LocalDate.of(1990, 1, 1));
 
         // Act
