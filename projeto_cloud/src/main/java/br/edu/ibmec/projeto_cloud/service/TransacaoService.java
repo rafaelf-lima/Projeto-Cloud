@@ -39,7 +39,11 @@ public class TransacaoService {
         }
 
         if (cartao.getSaldo() < transacao.getValor()) {
-            throw new Exception("Cartão sem limite para a compra");
+            throw new Exception("Saldo insuficiente para a compra");
+        }
+
+        if (cartao.getLimite() < transacao.getValor()) {
+            throw new Exception("Limite inferior ao valor de compra.");
         }
 
         // Busca por transações com o mesmo valor e comerciante

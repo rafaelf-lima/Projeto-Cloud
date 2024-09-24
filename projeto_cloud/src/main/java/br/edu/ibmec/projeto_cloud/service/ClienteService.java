@@ -69,6 +69,11 @@ public class ClienteService {
         if (cartao.getEstaAtivado() == false) {
             throw new Exception("Cartão não está ativado");
         }
+
+        if (cartao.getDataValidade().isBefore(LocalDate.now())) {
+            throw new Exception("Insira uma data correta, o cartão deve ter data de validade superior a hoje.");
+        }
+
         
         // Associa o cartão ao cliente
         cliente.associarCartao(cartao);

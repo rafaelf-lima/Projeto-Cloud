@@ -12,6 +12,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotNull;
 
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -25,6 +26,7 @@ public class Cartao {
     @Column
     @Size(min = 16, max = 16, message = "Insira o número de cartão corretamente")
     @NotNull(message = "Número do cartão é obrigatório")
+    @Pattern(regexp = "^[0-9]+$")
     private String numeroCartao;
 
     @Column
@@ -34,7 +36,8 @@ public class Cartao {
     @Column
     @Size(min = 3, max = 3, message="Insira o CVV corretamente")
     @NotNull(message = "CVV obrigatório")
-    private int cvv;
+    @Pattern(regexp = "^[0-9]+$")
+    private String cvv;
 
     @Column
     @NotNull
