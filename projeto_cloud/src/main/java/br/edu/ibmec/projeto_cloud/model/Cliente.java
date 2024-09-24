@@ -4,6 +4,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.validator.constraints.br.CPF;
+import jakarta.validation.constraints.Pattern;
+
 import jakarta.validation.constraints.NotNull;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -31,6 +34,8 @@ public class Cliente {
 
     @Column
     @NotBlank(message = "CPF é obrigatório")
+    @CPF(message = "CPF inválido")
+    @Pattern(regexp = "\\d{3}\\.\\d{3}\\.\\d{3}\\-\\d{2}", message = "O CPF deve estar no formato XXX.XXX.XXX-XX")
     private String cpf;
 
     @Column
@@ -43,6 +48,7 @@ public class Cliente {
 
     @Column
     @NotBlank(message = "Telefone é obrigatório")
+    @Pattern(regexp = "\\(\\d{2}\\)\\d{5}-\\d{4}", message = "O telefone deve estar no formato (XX)XXXXX-XXXX")
     private String telefone;
 
     @Column

@@ -10,7 +10,6 @@ import br.edu.ibmec.projeto_cloud.model.Cartao;
 
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -23,32 +22,14 @@ public class ClienteService {
 
 
     public Cliente createCliente(Cliente cliente) throws Exception {
-        // Busca a lista de clientes
-        List<Cliente> Clientes = clienteRepository.findAll();
-
-        // Remove caracteres não numéricos do CPF
-        String cpfFormatado = cliente.getCpf().replaceAll("\\D", "");
-
-        // Verifica se o CPF é válido
-        if (!validarCPF(cliente.getCpf())) {
-            throw new Exception("CPF inválido.");
-        }
 
         // Verifica se o CPF já está cadastrado
-        for (Cliente c : Clientes) {
-            String cpfExistente = c.getCpf().replaceAll("\\D", "");
-            if (cpfExistente.equals(cpfFormatado)) {
-                throw new Exception("Já existe um cliente com esse CPF.");
-            }
-        }
+        if (clienteRepository.findByCpf(cliente.getCpf()).isPresent())
+            throw new Exception("Já existe um cliente com esse CPF.");
 
         // Verifica se o cliente é maior de idade
-        if (!eMaiorDeIdade(cliente.getDataNascimento())){
-            throw new Exception("Você deve ser maior de 18 anos");
-        }
-
-        // Formata CPF do cliente
-        cliente.setCpf(cpfFormatado);
+        if (!eMaiorDeIdade(cliente.getDataNascimento()))
+            throw new Exception("Cliente deve ser maior de 18 anos");
         
         // Salva cliente na Base de dados
         clienteRepository.save(cliente);
@@ -58,12 +39,14 @@ public class ClienteService {
 
     public Cliente associarCartao(Cartao cartao, int id) throws Exception {
         // Busca o cliente
-        Cliente cliente = this.findCliente(id);
+        Optional<Cliente> clienteExistente = clienteRepository.findById(id);
 
         // Verifica se o cliente existe
-        if (cliente == null) {
+        if (!clienteExistente.isPresent()) {
             throw new Exception("Cliente não encontrado");
         }
+
+        Cliente cliente = clienteExistente.get();
 
         // Verifica se o cartão está ativado
         if (cartao.getEstaAtivado() == false) {
@@ -82,55 +65,42 @@ public class ClienteService {
         return cliente;
     }
 
-    public Cliente buscaCliente(int id) {
-        return findCliente(id);
-    }
+    // public boolean validarCPF(String cpf) {
+    //     cpf = cpf.replaceAll("\\D", "");
+    //     if (cpf.length() != 11) {
+    //         return false;
+    //     }
+    //     if (cpf.chars().distinct().count() == 1) {
+    //         return false;
+    //     }
+    //     try {
+    //         int peso = 10;
+    //         int soma = 0;
+    //         for (int i = 0; i < 9; i++) {
+    //             soma += Character.getNumericValue(cpf.charAt(i)) * peso--;
+    //         }
 
-    private Cliente findCliente(int id) {
-        Optional<Cliente> usuario = clienteRepository.findById(id);
+    //         int primeiroDigitoVerificador = 11 - (soma % 11);
+    //         if (primeiroDigitoVerificador >= 10) {
+    //             primeiroDigitoVerificador = 0;
+    //         }
+    //         peso = 11;
+    //         soma = 0;
+    //         for (int i = 0; i < 10; i++) {
+    //             soma += Character.getNumericValue(cpf.charAt(i)) * peso--;
+    //         }
 
-        if (usuario.isEmpty())
-            return null;
+    //         int segundoDigitoVerificador = 11 - (soma % 11);
+    //         if (segundoDigitoVerificador >= 10) {
+    //             segundoDigitoVerificador = 0;
+    //         }
+    //         return (primeiroDigitoVerificador == Character.getNumericValue(cpf.charAt(9)) &&
+    //                 segundoDigitoVerificador == Character.getNumericValue(cpf.charAt(10)));
 
-        return usuario.get();
-    }
-
-    public boolean validarCPF(String cpf) {
-        cpf = cpf.replaceAll("\\D", "");
-        if (cpf.length() != 11) {
-            return false;
-        }
-        if (cpf.chars().distinct().count() == 1) {
-            return false;
-        }
-        try {
-            int peso = 10;
-            int soma = 0;
-            for (int i = 0; i < 9; i++) {
-                soma += Character.getNumericValue(cpf.charAt(i)) * peso--;
-            }
-
-            int primeiroDigitoVerificador = 11 - (soma % 11);
-            if (primeiroDigitoVerificador >= 10) {
-                primeiroDigitoVerificador = 0;
-            }
-            peso = 11;
-            soma = 0;
-            for (int i = 0; i < 10; i++) {
-                soma += Character.getNumericValue(cpf.charAt(i)) * peso--;
-            }
-
-            int segundoDigitoVerificador = 11 - (soma % 11);
-            if (segundoDigitoVerificador >= 10) {
-                segundoDigitoVerificador = 0;
-            }
-            return (primeiroDigitoVerificador == Character.getNumericValue(cpf.charAt(9)) &&
-                    segundoDigitoVerificador == Character.getNumericValue(cpf.charAt(10)));
-
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
+    //     } catch (NumberFormatException e) {
+    //         return false;
+    //     }
+    // }
 
     public boolean eMaiorDeIdade(LocalDate dataNascimento){
         return Period.between(dataNascimento, LocalDate.now()).getYears() >= 18;

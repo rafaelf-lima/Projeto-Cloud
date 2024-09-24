@@ -3,6 +3,7 @@ package br.edu.ibmec.projeto_cloud.model;
 import java.time.LocalDate;
 import java.util.List;
 
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -45,7 +46,6 @@ public class Cartao {
     @NotNull(message = "Status do cartão é obrigatório")
     private Boolean estaAtivado;
 
-    @OneToMany
     @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(referencedColumnName = "id", name = "cartao_id")
     private List<Transacao> transacoes;

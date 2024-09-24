@@ -23,32 +23,55 @@ public class TransacaoService {
 
 
     public Transacao createTransacao(Transacao transacao, int id) throws Exception {
-
-        Cartao cartao = null;
+        // Busca cartão pelo id
+        Optional<Cartao> cartaoExistente = cartaoRepository.findById(id);
 
         // Verifica se o cartão existe
-        if (cartaoRepository.findById(id).isEmpty()) {
+        if (!cartaoExistente.isPresent())
             throw new Exception("Cartão não encontrado.");
-        } else {
-            cartao = cartaoRepository.findById(id).get();
-        }
+        
+        Cartao cartao = cartaoExistente.get();
 
-        // Verifica se o cartão está ativo
+        // Verifica se o cartão está ativo  
         if (!cartao.getEstaAtivado()) {
             throw new Exception("Cartão inativo.");
         }
 
         // Busca por transações com o mesmo valor e comerciante
-        List<Transacao> transacoesComMesmoValorEComerciante = transacaoRepository.findByValorAndComerciante(
+        List<Transacao> transacoesDuplicadas = transacaoRepository.findByValorAndComerciante(
             transacao.getValor(), transacao.getComerciante()
         );
 
-        // Verifica se existe alguma transação com dataTransacao a menos de 2 minutos de diferença
-        for (Transacao transacaoExistente : transacoesComMesmoValorEComerciante) {
-            if (isWithinTwoMinutes(transacaoExistente.getDataTransacao(), transacao.getDataTransacao())) {
-                throw new Exception("Transação duplicada encontrada.");
+        // Busca por transações feitas no cartão
+        List<Transacao> transacoesCartao = cartao.getTransacoes();
+
+        // Contar quantas transações ocorreram nos últimos 2 minutos em relação à nova transação
+        int transacoesNosUltimosDoisMinutos = 0;
+
+        for (Transacao transacaoCartao : transacoesCartao) {
+            if (isWithinTwoMinutes(transacaoCartao.getDataTransacao(), transacao.getDataTransacao())) {
+                transacoesNosUltimosDoisMinutos++;
             }
         }
+
+        // Verifica se já existem 3 ou mais transações nos últimos 2 minutos
+        if (transacoesNosUltimosDoisMinutos >= 3) {
+            throw new Exception("Limite de 3 transações em 2 minutos excedido.");
+        }
+
+        // Verifica se existe alguma transação em comum entre as duas listas
+        for (Transacao transacaoDuplicada : transacoesDuplicadas) {
+            for (Transacao transacaoCartao : transacoesCartao) {
+                if (transacaoCartao.getValor() == transacaoDuplicada.getValor() &&
+                    transacaoCartao.getComerciante().equals(transacaoDuplicada.getComerciante())) {
+                    // Se as transações forem do mesmo valor e comerciante, compara a data de transação
+                    if (isWithinTwoMinutes(transacaoCartao.getDataTransacao(), transacaoDuplicada.getDataTransacao())) {
+                        throw new Exception("Transação duplicada encontrada.");
+                    }
+                }
+            }
+        }
+
         // Associa a transação ao cartão
         cartao.adicionarTransacao(transacao);
 
@@ -61,38 +84,26 @@ public class TransacaoService {
         return transacao;
     }
 
+    public List<Transacao> getAllTransacoesByCartao(int id) throws Exception {
+
+        // Busca cliente pelo id
+        Optional<Cartao> cartaoExistente = cartaoRepository.findById(id);
+
+        // Verifica se o cartão existe
+        if (!cartaoExistente.isPresent())
+            throw new Exception("Cartão não encontrado.");
+        
+        Cartao cartao = cartaoExistente.get();
+        
+        return cartao.getTransacoes();
+    }
+
     private boolean isWithinTwoMinutes(LocalDateTime dataTransacaoExistente, LocalDateTime dataTransacaoNova) {
         // Calcula a diferença entre as duas datas
         Duration duration = Duration.between(dataTransacaoExistente, dataTransacaoNova);
 
         // Verifica se a diferença é menor que 2 minutos (em termos absolutos)
         return Math.abs(duration.toMinutes()) < 2;
-    }
-
-    public Transacao buscaTransacao(int id) {
-        return findTransacao(id);
-    }
-
-    private Transacao findTransacao(int id) {
-        Optional<Transacao> transacao = transacaoRepository.findById(id);
-
-        if (transacao.isEmpty())
-            return null;
-
-        return transacao.get();
-    }
-
-    public List<Transacao> getAllTransacoesByCartao(int id) throws Exception {
-        Cartao cartao;
-
-        // Verifica se o cartão existe
-        if (cartaoRepository.findById(id).isEmpty()) {
-            throw new Exception("Cartão não encontrado.");
-        } else {
-            cartao = cartaoRepository.findById(id).get();
-        }
-        
-        return cartao.getTransacoes();
     }
 
     // enviarNotificacaoSobreTransacao
