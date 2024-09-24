@@ -31,9 +31,6 @@ public class ClienteService {
         if (!verificaIdade(cliente.getDataNascimento())){
             throw new Exception("Cliente deve ser maior de 18 anos");
         }
-
-        // Formata CPF do cliente
-        cliente.setCpf(cpfFormatado);
         
         // Salva cliente na Base de dados
         clienteRepository.save(cliente);
@@ -61,7 +58,6 @@ public class ClienteService {
             throw new Exception("Insira uma data correta, o cartão deve ter data de validade superior a hoje.");
         }
 
-        
         // Associa o cartão ao cliente
         cliente.associarCartao(cartao);
 
