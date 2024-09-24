@@ -37,6 +37,14 @@ public class TransacaoService {
             throw new Exception("Cartão inativo.");
         }
 
+        if (cartao.getSaldo() < transacao.getValor()) {
+            throw new Exception("Saldo insuficiente para a compra");
+        }
+
+        if (cartao.getLimite() < transacao.getValor()) {
+            throw new Exception("Limite inferior ao valor de compra.");
+        }
+
         // Busca por transações com o mesmo valor e comerciante
         List<Transacao> transacoesDuplicadas = transacaoRepository.findByValorAndComerciante(
             transacao.getValor(), transacao.getComerciante()
@@ -77,6 +85,8 @@ public class TransacaoService {
 
         // Salva a transação no banco de dados
         transacaoRepository.save(transacao);
+
+        cartao.setSaldo(cartao.getSaldo() - transacao.getValor());
 
         // Salva o cartão no banco de dados
         cartaoRepository.save(cartao);

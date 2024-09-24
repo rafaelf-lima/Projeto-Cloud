@@ -6,11 +6,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
+import br.edu.ibmec.projeto_cloud.repository.ClienteRepository;
 import br.edu.ibmec.projeto_cloud.service.ClienteService;
 import br.edu.ibmec.projeto_cloud.model.Cliente;
 import br.edu.ibmec.projeto_cloud.model.Cartao;
-
-import br.edu.ibmec.projeto_cloud.repository.ClienteRepository;
 
 import java.util.List;
 import java.util.Optional;
