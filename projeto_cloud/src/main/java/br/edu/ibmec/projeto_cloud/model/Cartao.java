@@ -46,6 +46,7 @@ public class Cartao {
     private Boolean estaAtivado;
 
     @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(referencedColumnName = "id", name = "cartao_id")
     private List<Transacao> transacoes;
 
