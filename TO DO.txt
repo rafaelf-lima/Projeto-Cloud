@@ -25,3 +25,13 @@ public class MyServiceTests {
         assertEquals(5, result, "The add method should correctly add two numbers.");
     }
 }
+
+To do (23/09):
+- Validação do limite: F
+- Ajustar método de validar CPF: F
+- Data de validade do cartão: F
+- Notificações: D
+- Validação de erro: D
+- Validação da segunda regra de negócio: F
+- Melhorar validação dos atributos: M
+- Application Properties (Testes): F
