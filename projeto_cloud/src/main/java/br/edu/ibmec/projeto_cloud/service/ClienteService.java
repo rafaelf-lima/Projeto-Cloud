@@ -43,7 +43,7 @@ public class ClienteService {
         }
 
         // Verifica se o cliente é maior de idade
-        if (!eMaiorDeIdade(cliente.getDataNascimento())){
+        if (!verificaIdade(cliente.getDataNascimento())){
             throw new Exception("Você deve ser maior de 18 anos");
         }
 
@@ -69,6 +69,11 @@ public class ClienteService {
         if (cartao.getEstaAtivado() == false) {
             throw new Exception("Cartão não está ativado");
         }
+
+        if (cartao.getDataValidade().isBefore(LocalDate.now())) {
+            throw new Exception("Insira uma data correta, o cartão deve ter data de validade superior a hoje.");
+        }
+
         
         // Associa o cartão ao cliente
         cliente.associarCartao(cartao);
@@ -132,8 +137,9 @@ public class ClienteService {
         }
     }
 
-    public boolean eMaiorDeIdade(LocalDate dataNascimento){
-        return Period.between(dataNascimento, LocalDate.now()).getYears() >= 18;
+    public boolean verificaIdade(LocalDate dataNascimento){
+        int idade = Period.between(dataNascimento, LocalDate.now()).getYears();
+        return idade >= 18;
     }
 
     // enviarNotificacaoSobreAssociacaoDeCartao

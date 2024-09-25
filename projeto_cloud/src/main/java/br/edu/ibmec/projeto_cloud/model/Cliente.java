@@ -15,7 +15,9 @@ import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
+import jakarta.validation.constraints.Size;
 import lombok.Data;
+import org.hibernate.validator.constraints.br.CPF;
 
 @Data
 @Entity
@@ -29,6 +31,7 @@ public class Cliente {
     private String nome;
 
     @Column
+    @CPF
     @NotBlank(message = "CPF é obrigatório")
     private String cpf;
 
