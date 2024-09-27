@@ -49,15 +49,21 @@ public class ClienteController {
 
     @PostMapping("{id}/associar-cartao")
     public ResponseEntity<Cliente> getClienteById(@PathVariable("id") int id, @Valid @RequestBody Cartao cartao) throws Exception {
-        Optional<Cliente> tryResponse = clienteRepository.findById(id);
-
-        if (!tryResponse.isPresent())
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-
         Cliente response = service.associarCartao(cartao, id);
+
+        if (response == null)
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    // enviarNotificacaoSobreAssociacaoDeCartao
+    @PutMapping("{id}/cartao-status/{idCartao}")
+    public ResponseEntity<Cartao> updateCartaoStatus(@PathVariable("id") int id, @PathVariable("idCartao") int idCartao) throws Exception {
+        Cartao response = service.cartaoStatus(id, idCartao);
+
+        if (response == null)
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 }

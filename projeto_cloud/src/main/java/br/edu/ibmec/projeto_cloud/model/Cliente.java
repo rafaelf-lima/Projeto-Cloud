@@ -18,6 +18,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Past;
 
 import lombok.Data;
 
@@ -30,6 +32,7 @@ public class Cliente {
 
     @Column
     @NotBlank(message = "O nome do cliente é obrigatório")
+    @Size(min = 3, message = "Nome deve ter pelo menos 3 caracteres")
     private String nome;
 
     @Column
@@ -40,10 +43,12 @@ public class Cliente {
 
     @Column
     @NotNull(message = "Data de nascimento é obrigatório")
+    @Past(message = "Data inválida")
     private LocalDate dataNascimento;
 
     @Column
-    @Email(message = "Email é obrigatório")
+    @NotBlank(message = "Email é obrigatório")
+    @Email(message = "Email inválido")
     private String email;
 
     @Column
@@ -59,7 +64,15 @@ public class Cliente {
     @JoinColumn(referencedColumnName = "id", name = "cliente_id")
     private List<Cartao> cartoes = new ArrayList<>();
 
+    @OneToMany(fetch = FetchType.EAGER)
+    @JoinColumn(referencedColumnName = "id", name = "cliente_id")
+    private List<Notificacao> notificacoes = new ArrayList<>();
+
     public void associarCartao(Cartao cartao) {
         this.cartoes.add(cartao);
+    }
+
+    public void associarNotificacao(Notificacao notificacao) {
+        this.notificacoes.add(notificacao);
     }
 }

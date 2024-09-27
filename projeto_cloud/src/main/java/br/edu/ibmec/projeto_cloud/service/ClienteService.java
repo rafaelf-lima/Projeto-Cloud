@@ -5,10 +5,13 @@ import org.springframework.stereotype.Service;
 
 import br.edu.ibmec.projeto_cloud.repository.ClienteRepository;
 import br.edu.ibmec.projeto_cloud.repository.CartaoRepository;
+import br.edu.ibmec.projeto_cloud.repository.NotificacaoRepository;
 import br.edu.ibmec.projeto_cloud.model.Cliente;
+import br.edu.ibmec.projeto_cloud.model.Notificacao;
 import br.edu.ibmec.projeto_cloud.model.Cartao;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.Optional;
 
@@ -19,6 +22,9 @@ public class ClienteService {
 
     @Autowired
     private CartaoRepository cartaoRepository;
+
+    @Autowired
+    private NotificacaoRepository notificacaoRepository;
 
 
     public Cliente createCliente(Cliente cliente) throws Exception {
@@ -44,19 +50,33 @@ public class ClienteService {
 
         // Verifica se o cliente existe
         if (!clienteExistente.isPresent()) {
-            throw new Exception("Cliente não encontrado");
+            return null;
         }
-
         Cliente cliente = clienteExistente.get();
 
-        // Verifica se o cartão está ativado
-        if (cartao.getEstaAtivado() == false) {
-            throw new Exception("Cartão não está ativado");
+        // Verifica se o número do cartão já está registrado
+        if (cartaoRepository.findByNumeroCartao(cartao.getNumeroCartao()) != null) {
+            throw new Exception("Número do cartão já associado a outro cliente");
         }
 
+        // Verifica se o cliente tem um cartão com o mesmo final
+        if (cliente.getCartoes().stream().anyMatch(c -> c.getNumeroCartao().endsWith(cartao.getNumeroCartao().substring(cartao.getNumeroCartao().length() - 4)))) {
+            throw new Exception("Cliente já possui um cartão com os mesmos 4 últimos dígitos");
+        }
+
+        // Verifica se a data de validade é válida
         if (cartao.getDataValidade().isBefore(LocalDate.now())) {
             throw new Exception("Insira uma data correta, o cartão deve ter data de validade superior a hoje.");
         }
+
+        // Cria a notificação
+        Notificacao notificacao = new Notificacao();
+        
+        String ultimosQuatroDigitos = cartao.getNumeroCartao().substring(cartao.getNumeroCartao().length() - 4);
+
+        notificacao.setTipoNotificacao("Associação de cartão");
+        notificacao.setMensagem("Cartão com final " + ultimosQuatroDigitos + " associado com sucesso");
+        notificacao.setDataNotificacao(LocalDateTime.now());
 
         // Associa o cartão ao cliente
         cliente.associarCartao(cartao);
@@ -64,53 +84,70 @@ public class ClienteService {
         // Salvar cartão no repositório
         cartaoRepository.save(cartao);
 
+        // Associa a notificação ao cliente
+        cliente.associarNotificacao(notificacao);
+
+        // Salvar notificação no repositório
+        notificacaoRepository.save(notificacao);
+
         // Atualiza o cliente com novo cartão no repositório
         clienteRepository.save(cliente);
 
         return cliente;
     }
 
-    // public boolean validarCPF(String cpf) {
-    //     cpf = cpf.replaceAll("\\D", "");
-    //     if (cpf.length() != 11) {
-    //         return false;
-    //     }
-    //     if (cpf.chars().distinct().count() == 1) {
-    //         return false;
-    //     }
-    //     try {
-    //         int peso = 10;
-    //         int soma = 0;
-    //         for (int i = 0; i < 9; i++) {
-    //             soma += Character.getNumericValue(cpf.charAt(i)) * peso--;
-    //         }
+    public Cartao cartaoStatus(int id, int idCartao) throws Exception {
+        // Busca cliente e cartão
+        Optional<Cliente> clienteOptional = clienteRepository.findById(id);        
+        Optional<Cartao> cartaoOptional = cartaoRepository.findById(idCartao);
 
-    //         int primeiroDigitoVerificador = 11 - (soma % 11);
-    //         if (primeiroDigitoVerificador >= 10) {
-    //             primeiroDigitoVerificador = 0;
-    //         }
-    //         peso = 11;
-    //         soma = 0;
-    //         for (int i = 0; i < 10; i++) {
-    //             soma += Character.getNumericValue(cpf.charAt(i)) * peso--;
-    //         }
+        // Confirma a existência do cartão e do cliente
+        if (!clienteOptional.isPresent() || !cartaoOptional.isPresent())  {
+            return null;
+        }
+        Cliente cliente = clienteOptional.get();
+        Cartao cartao = cartaoOptional.get();
 
-    //         int segundoDigitoVerificador = 11 - (soma % 11);
-    //         if (segundoDigitoVerificador >= 10) {
-    //             segundoDigitoVerificador = 0;
-    //         }
-    //         return (primeiroDigitoVerificador == Character.getNumericValue(cpf.charAt(9)) &&
-    //                 segundoDigitoVerificador == Character.getNumericValue(cpf.charAt(10)));
+        // Confirma associação entre cartão e cliente
+        if (!cliente.getCartoes().contains(cartao)) {
+            throw new Exception("Cartão não está associado a esse cliente");
+        }
 
-    //     } catch (NumberFormatException e) {
-    //         return false;
-    //     }
-    // }
+        // Muda status do cartão
+        cartao.setEstaAtivado(!cartao.getEstaAtivado());
+
+        // Configura String 'status' para notificação 
+        String status;
+
+        if (cartao.getEstaAtivado()) {
+            status = "ativado";
+        } else {
+            status = "desativado";
+        }
+
+        // Cria a notificação
+        Notificacao notificacao = new Notificacao();
+        
+        String ultimosQuatroDigitos = cartao.getNumeroCartao().substring(cartao.getNumeroCartao().length() - 4);
+
+        notificacao.setTipoNotificacao("Desbloqueio de cartão");
+        notificacao.setMensagem("Cartão com final " + ultimosQuatroDigitos + " está " + status);
+        notificacao.setDataNotificacao(LocalDateTime.now());
+
+        // Salvar cartão com novo status
+        cartaoRepository.save(cartao);
+
+        // Associa a notificação ao cliente
+        cliente.associarNotificacao(notificacao);
+
+        // Salvar notificação no repositório
+        notificacaoRepository.save(notificacao);
+
+        return cartao;
+    }
 
     public boolean verificaIdade(LocalDate dataNascimento){
         int idade = Period.between(dataNascimento, LocalDate.now()).getYears();
         return idade >= 18;
     }
-
-    // enviarNotificacaoSobreAssociacaoDeCartao
 }
