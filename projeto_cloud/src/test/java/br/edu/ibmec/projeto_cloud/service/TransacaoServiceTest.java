@@ -34,9 +34,9 @@ class TransacaoServiceTest {
 
         Cartao cartao = new Cartao();
         cartao.setId(1);
-        cartao.setNumeroCartao(1234123412345698L);
+        cartao.setNumeroCartao("1234123412345698");
         cartao.setDataValidade(LocalDate.parse("2026-08-08"));
-        cartao.setCvv(147);
+        cartao.setCvv("147");
         cartao.setLimite(100.0);
         cartao.setSaldo(100.0);
         cartao.setEstaAtivado(true);
@@ -73,9 +73,9 @@ class TransacaoServiceTest {
 
         Cartao cartao = new Cartao();
         cartao.setId(1);
-        cartao.setNumeroCartao(1234123412345698L);
+        cartao.setNumeroCartao("1234123412345698");
         cartao.setDataValidade(LocalDate.parse("2026-08-08"));
-        cartao.setCvv(147);
+        cartao.setCvv("147");
         cartao.setLimite(100.0); // Limite do cartão
         cartao.setSaldo(100.0);
         cartao.setEstaAtivado(true); // Cartão ativado
