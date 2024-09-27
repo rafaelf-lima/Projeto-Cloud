@@ -10,6 +10,7 @@ import java.util.UUID;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("unused")
 @Service
 public class ClienteService {
     private static List<Cliente> Clientes = new ArrayList<>();

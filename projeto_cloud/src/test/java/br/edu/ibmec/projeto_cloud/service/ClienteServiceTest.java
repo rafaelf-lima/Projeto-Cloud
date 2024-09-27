@@ -21,8 +21,8 @@ public class ClienteServiceTest {
         // Arrange
         Cliente cliente = new Cliente();
         cliente.setNome("João");
-        cliente.setCpf("123.456.229-46");
-        cliente.setEmail("joao@teste2.com");
+        cliente.setCpf("987-654-321-00");
+        cliente.setEmail("joao@teste.com");
         cliente.setEndereco("Rua 1 casa B");
         cliente.setTelefone("(21)123456789");
         cliente.setDataNascimento(LocalDate.of(1990, 1, 1));
@@ -47,9 +47,10 @@ public class ClienteServiceTest {
         // Arrange
         Cliente cliente1 = new Cliente();
         cliente1.setNome("João");
-        cliente1.setCpf("123.456.789-09");
+        cliente1.setCpf("584.232.147-53");
         cliente1.setEmail("joao@email.com");
         cliente1.setTelefone("123456789");
+        cliente1.setEndereco("Rua paulo cesar de andrade 232");
         cliente1.setDataNascimento(LocalDate.of(1990, 1, 1));
         service.createCliente(cliente1);
 
