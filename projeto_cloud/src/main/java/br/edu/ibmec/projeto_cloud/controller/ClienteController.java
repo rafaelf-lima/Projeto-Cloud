@@ -12,6 +12,7 @@ import br.edu.ibmec.projeto_cloud.model.Cliente;
 import br.edu.ibmec.projeto_cloud.model.Cartao;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/cliente")
@@ -30,9 +31,13 @@ public class ClienteController {
 
     @GetMapping("{id}")
     public ResponseEntity<Cliente> getClienteById(@PathVariable("id") int id) {
-        Cliente response = service.buscaCliente(id);
-        if (response == null)
+        Optional<Cliente> tryResponse = clienteRepository.findById(id);
+
+        if (!tryResponse.isPresent())
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+
+        Cliente response = tryResponse.get();
+
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
     
@@ -43,10 +48,22 @@ public class ClienteController {
     }
 
     @PostMapping("{id}/associar-cartao")
-    public ResponseEntity<Cliente> associarCartaoAoCliente(@PathVariable("id") int id, @Valid @RequestBody Cartao cartao) throws Exception {
+    public ResponseEntity<Cliente> getClienteById(@PathVariable("id") int id, @Valid @RequestBody Cartao cartao) throws Exception {
         Cliente response = service.associarCartao(cartao, id);
+
+        if (response == null)
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    // enviarNotificacaoSobreAssociacaoDeCartao
+    @PutMapping("{id}/cartao-status/{idCartao}")
+    public ResponseEntity<Cartao> updateCartaoStatus(@PathVariable("id") int id, @PathVariable("idCartao") int idCartao) throws Exception {
+        Cartao response = service.cartaoStatus(id, idCartao);
+
+        if (response == null)
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 }

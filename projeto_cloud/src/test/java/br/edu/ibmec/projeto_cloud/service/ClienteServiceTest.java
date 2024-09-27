@@ -24,7 +24,7 @@ public class ClienteServiceTest {
         cliente.setCpf("987-654-321-00");
         cliente.setEmail("joao@teste.com");
         cliente.setEndereco("Rua 1 casa B");
-        cliente.setTelefone("123456789");
+        cliente.setTelefone("(21)123456789");
         cliente.setDataNascimento(LocalDate.of(1990, 1, 1));
 
         // Act
