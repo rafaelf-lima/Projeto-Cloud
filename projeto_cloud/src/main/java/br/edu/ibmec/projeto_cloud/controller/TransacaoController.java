@@ -11,6 +11,7 @@ import br.edu.ibmec.projeto_cloud.model.Transacao;
 import br.edu.ibmec.projeto_cloud.repository.TransacaoRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/transacao")
@@ -30,26 +31,34 @@ public class TransacaoController {
 
     @GetMapping("{id}")
     public ResponseEntity<Transacao> getTransacaoById(@PathVariable("id") int id) {
-        Transacao response = service.buscaTransacao(id);
-        if (response == null)
+        Optional<Transacao> tryResponse = transacaoRepository.findById(id);
+
+        if (!tryResponse.isPresent())
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+
+        Transacao response = tryResponse.get();
+
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("cartao/{id}")
     public ResponseEntity<List<Transacao>> getTransacoesByCartao(@PathVariable("id") int id) throws Exception {
-        List<Transacao> response = service.getAllTransacoesByCartao(id);
-        if (response.isEmpty())
+        List<Transacao> transacoes = service.getAllTransacoesByCartao(id);
+
+        if (transacoes == null)
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+
+        return new ResponseEntity<>(transacoes, HttpStatus.OK);
     }
 
     @PostMapping("cartao/{id}")
-    public ResponseEntity<Transacao> saveTransacao(@Valid @RequestBody Transacao transacao, @PathVariable("id") int id) throws Exception {
+    public ResponseEntity<Transacao> saveTransacao(@PathVariable("id") int id, @Valid @RequestBody Transacao transacao) throws Exception {
         Transacao response = service.createTransacao(transacao, id);
+
+        if (response == null)
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
-
-    // enviarNotifacacaoSobreTransacao
 
 }
