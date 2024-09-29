@@ -25,7 +25,7 @@ public class Transacao {
 
     @Column
     @NotNull(message = "Valor da transação é obrigatório")
-    private double valor;
+    private Double valor;
 
     @Column
     @NotBlank(message = "Informação sobre o comerciante é obrigatório")
