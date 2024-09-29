@@ -80,6 +80,14 @@ public class TransacaoService {
             throw new Exception("Saldo insuficiente para a compra");
         }
 
+        if (cartao.getLimite() < transacao.getValor()) {
+            notificacao.setMensagem(mensagemBase + "Limite insuficiente");
+            cliente.associarNotificacao(notificacao);
+            notificacaoRepository.save(notificacao);
+
+            throw new Exception("Limite insuficiente para a compra");
+        }
+
         // Busca por transações com o mesmo valor e comerciante
         List<Transacao> transacoesDuplicadas = transacaoRepository.findByValorAndComerciante(
             transacao.getValor(), transacao.getComerciante()
