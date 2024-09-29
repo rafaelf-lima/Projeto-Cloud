@@ -48,11 +48,11 @@ public class Cartao {
 
     @Column
     @NotNull(message = "Limite é obrigatório")
-    private double limite; // Limite no início do mês (pós pagamento da boleto)
+    private Double limite; // Limite no início do mês (pós pagamento da boleto)
 
     @Column
     @NotNull(message = "Saldo é obrigatório")
-    private double saldo; // Saldo: saldo - valor por transações
+    private Double saldo; // Saldo: saldo - valor por transações
 
     @Column
     @JsonProperty(defaultValue = "false")  // Informa ao Jackson que o padrão é false
