@@ -26,4 +26,41 @@ public class ValidationErrorInterceptor {
         }
         return response;
     }
+
+    @ExceptionHandler(ClienteException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public ValidationMessageError validationHandlerCliente(ClienteException e) {
+        ValidationMessageError response = new ValidationMessageError();
+        ValidationError error = new ValidationError();
+        error.setField("exception");
+        error.setMessage(e.getMessage());
+        response.getErrors().add(error);
+        return response;
+    }
+
+    @ExceptionHandler(CartaoException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public ValidationMessageError validationHandlerCartao(CartaoException e) {
+        ValidationMessageError response = new ValidationMessageError();
+        ValidationError error = new ValidationError();
+        error.setField("exception");
+        error.setMessage(e.getMessage());
+        response.getErrors().add(error);
+        return response;
+    }
+
+    @ExceptionHandler(TransacaoException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public ValidationMessageError validationHandlerTransacao(TransacaoException e) {
+        ValidationMessageError response = new ValidationMessageError();
+        ValidationError error = new ValidationError();
+        error.setField("exception");
+        error.setMessage(e.getMessage());
+        response.getErrors().add(error);
+        return response;
+    }
+
 }
