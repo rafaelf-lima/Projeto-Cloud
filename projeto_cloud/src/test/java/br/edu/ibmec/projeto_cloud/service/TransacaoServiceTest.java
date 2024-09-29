@@ -1,11 +1,14 @@
 package br.edu.ibmec.projeto_cloud.service;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.beans.factory.annotation.Autowired;
-
-// import static org.mockito.ArgumentMatchers.any;
-// import static org.mockito.Mockito.when;
+import org.springframework.test.context.ActiveProfiles;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 import java.time.*;
 
@@ -13,35 +16,73 @@ import br.edu.ibmec.projeto_cloud.model.Cartao;
 import br.edu.ibmec.projeto_cloud.model.Cliente;
 // import br.edu.ibmec.projeto_cloud.model.Cartao;
 import br.edu.ibmec.projeto_cloud.model.Transacao;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 
 @SpringBootTest
+@ActiveProfiles("test")
 class TransacaoServiceTest {
 
     @Autowired
     private TransacaoService service;
 
+    @Autowired
+    private EntityManager entityManager;
+
+    @BeforeEach
+    public void setup() {
+    // Cria um cliente padrão
+    Cliente clientePadrao = new Cliente();
+    clientePadrao.setId(1);
+    clientePadrao.setNome("Ivo");
+    clientePadrao.setCpf("12345678909");
+    clientePadrao.setEmail("asc12345@bb.com");
+    clientePadrao.setTelefone("998880000");
+    clientePadrao.setEndereco("Rua A apto 104");
+    clientePadrao.setDataNascimento(LocalDate.parse("1997-03-07"));
+
+    // Salva o cliente no banco de dados
+    entityManager.persist(clientePadrao);
+
+    // Cria um cartão padrão associado ao cliente
+    Cartao cartaoPadrao = new Cartao();
+    cartaoPadrao.setId(1);
+    cartaoPadrao.setNumeroCartao("1234123412345698L");
+    cartaoPadrao.setCvv("147");
+    cartaoPadrao.setDataValidade(LocalDate.parse("2026-08-08"));
+    cartaoPadrao.setLimite(100.0);
+    cartaoPadrao.setSaldo(100.0);
+    cartaoPadrao.setEstaAtivado(true);
+
+    // Associa o cartão ao cliente
+    clientePadrao.getCartoes().add(cartaoPadrao);
+
+    // Salva o cartão no banco de dados
+    entityManager.persist(cartaoPadrao);
+}
     @Test
+    @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
     public void should_create_transacao() throws Exception {
         // Arrange
         Cliente cliente = new Cliente();
         cliente.setId(1);
         cliente.setNome("Ivo");
-        cliente.setCpf("123.456.789-09");
+        cliente.setCpf("12345678909");
         cliente.setDataNascimento(LocalDate.parse("1997-03-07"));
         cliente.setEmail("asc12345@bb.com");
-        cliente.setTelefone("(21)99888-0000");
+        cliente.setTelefone("998880000");
         cliente.setEndereco("Rua A apto 104");
 
-
         Cartao cartao = new Cartao();
-        cartao.setNumeroCartao("1234123412345698");
+        cartao.setId(1);
+        cartao.setNumeroCartao("1234123412345698L");
         cartao.setDataValidade(LocalDate.parse("2026-08-08"));
         cartao.setCvv("147");
         cartao.setLimite(100.0);
         cartao.setSaldo(100.0);
         cartao.setEstaAtivado(true);
 
-        cliente.associarCartao(cartao);
+        cliente.getCartoes().add(cartao);
 
         Transacao transacao = new Transacao();
         transacao.setDataTransacao(LocalDateTime.parse("2024-08-08T12:50:59"));
@@ -49,58 +90,19 @@ class TransacaoServiceTest {
         transacao.setComerciante("Amazon");
 
         // Act
-        Transacao resultado = service.createTransacao(transacao, cartao.getId());
+        Transacao resultado = service.createTransacao(transacao, 1);
 
+        // Busca a transação no banco de dados H2
+        entityManager.flush(); // Agora o flush deve funcionar corretamente
+      
+        Transacao savedTransacao = entityManager.find(Transacao.class, resultado.getId());
+      
         // Assert
-        Assertions.assertNotNull(resultado);
-        Assertions.assertNotNull(resultado.getDataTransacao());
-        Assertions.assertNotNull(resultado.getValor());
-        Assertions.assertNotNull(resultado.getComerciante());
+        Assertions.assertNotNull(savedTransacao);
+        Assertions.assertNotNull(savedTransacao.getDataTransacao());
+        Assertions.assertNotNull(savedTransacao.getValor());
+        Assertions.assertNotNull(savedTransacao.getComerciante());
+        Assertions.assertEquals(resultado.getId(), savedTransacao.getId());
     }
-    // @Test
-    // public void should_throw_exception_when_transacao_exceeds_cartao_limit() throws Exception {
-    //     // Arrange
-    //     Cliente cliente = new Cliente();
-    //     cliente.setId(1);
-    //     cliente.setNome("Ivo");
-    //     cliente.setCpf("123-456-789-09");
-    //     cliente.setDataNascimento(LocalDate.parse("1997-03-07"));
-    //     cliente.setEmail("asc12345@bb.com");
-    //     cliente.setTelefone("998880000");
-    //     cliente.setEndereco("Rua A apto 104");
-
-    //     Cartao cartao = new Cartao();
-    //     cartao.setId(1);
-    //     cartao.setNumeroCartao("1234123412345698");
-    //     cartao.setDataValidade(LocalDate.parse("2026-08-08"));
-    //     cartao.setCvv("147");
-    //     cartao.setLimite(100.0); // Limite do cartão
-    //     cartao.setSaldo(100.0);
-    //     cartao.setEstaAtivado(true); // Cartão ativado
-
-    //     // Simule o comportamento dos repositórios
-    //     when(clienteRepository.findById(1)).thenReturn(Optional.of(cliente));
-    //     when(cartaoRepository.save(any(Cartao.class))).thenReturn(cartao);
-    //     when(clienteRepository.save(any(Cliente.class))).thenReturn(cliente);
-
-    //     // Associa o cartão ao cliente
-    //     cliente.associarCartao(cartao); // Usando o método de associação
-
-    //     // Agora, tente criar uma transação com um valor maior que o limite
-    //     Transacao transacao = new Transacao();
-    //     transacao.setValor(150.0); // Valor da transação maior que o limite
-    //     transacao.setComerciante("Amazon");
-    //     transacao.setDataTransacao(LocalDateTime.now());
-
-    //     // Simule a busca do cartão
-    //     when(cartaoRepository.findById(1)).thenReturn(Optional.of(cartao));
-
-    //     // Act & Assert
-    //     Exception exception = Assertions.assertThrows(Exception.class, () -> {
-    //         service.createTransacao(transacao, 1);
-    //     });
-
-    //     Assertions.assertEquals("Limite do cartão insuficiente.", exception.getMessage());
-    // }
 
 }    
