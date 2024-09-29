@@ -5,12 +5,14 @@ import org.springframework.stereotype.Service;
 
 import br.edu.ibmec.projeto_cloud.repository.ClienteRepository;
 import br.edu.ibmec.projeto_cloud.repository.CartaoRepository;
+import br.edu.ibmec.projeto_cloud.repository.NotificacaoRepository;
 import br.edu.ibmec.projeto_cloud.model.Cliente;
+import br.edu.ibmec.projeto_cloud.model.Notificacao;
 import br.edu.ibmec.projeto_cloud.model.Cartao;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Period;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -21,34 +23,20 @@ public class ClienteService {
     @Autowired
     private CartaoRepository cartaoRepository;
 
+    @Autowired
+    private NotificacaoRepository notificacaoRepository;
+
 
     public Cliente createCliente(Cliente cliente) throws Exception {
-        // Busca a lista de clientes
-        List<Cliente> Clientes = clienteRepository.findAll();
-
-        // Remove caracteres não numéricos do CPF
-        String cpfFormatado = cliente.getCpf().replaceAll("\\D", "");
-
-        // Verifica se o CPF é válido
-        if (!validarCPF(cliente.getCpf())) {
-            throw new Exception("CPF inválido.");
-        }
 
         // Verifica se o CPF já está cadastrado
-        for (Cliente c : Clientes) {
-            String cpfExistente = c.getCpf().replaceAll("\\D", "");
-            if (cpfExistente.equals(cpfFormatado)) {
-                throw new Exception("Já existe um cliente com esse CPF.");
-            }
-        }
+        if (clienteRepository.findByCpf(cliente.getCpf()).isPresent())
+            throw new Exception("Já existe um cliente com esse CPF.");
 
         // Verifica se o cliente é maior de idade
-        if (!eMaiorDeIdade(cliente.getDataNascimento())){
-            throw new Exception("Você deve ser maior de 18 anos");
+        if (!verificaIdade(cliente.getDataNascimento())){
+            throw new Exception("Cliente deve ser maior de 18 anos");
         }
-
-        // Formata CPF do cliente
-        cliente.setCpf(cpfFormatado);
         
         // Salva cliente na Base de dados
         clienteRepository.save(cliente);
@@ -58,23 +46,49 @@ public class ClienteService {
 
     public Cliente associarCartao(Cartao cartao, int id) throws Exception {
         // Busca o cliente
-        Cliente cliente = this.findCliente(id);
+        Optional<Cliente> clienteExistente = clienteRepository.findById(id);
 
         // Verifica se o cliente existe
-        if (cliente == null) {
-            throw new Exception("Cliente não encontrado");
+        if (!clienteExistente.isPresent()) {
+            return null;
+        }
+        Cliente cliente = clienteExistente.get();
+
+        // Verifica se o número do cartão já está registrado
+        if (cartaoRepository.findByNumeroCartao(cartao.getNumeroCartao()) != null) {
+            throw new Exception("Número do cartão já associado a outro cliente");
         }
 
-        // Verifica se o cartão está ativado
-        if (cartao.getEstaAtivado() == false) {
-            throw new Exception("Cartão não está ativado");
+        // Verifica se o cliente tem um cartão com o mesmo final
+        if (cliente.getCartoes().stream().anyMatch(c -> c.getNumeroCartao().endsWith(cartao.getNumeroCartao().substring(cartao.getNumeroCartao().length() - 4)))) {
+            throw new Exception("Cliente já possui um cartão com os mesmos 4 últimos dígitos");
         }
+
+        // Verifica se a data de validade é válida
+        if (cartao.getDataValidade().isBefore(LocalDate.now())) {
+            throw new Exception("Insira uma data correta, o cartão deve ter data de validade superior a hoje.");
+        }
+
+        // Cria a notificação
+        Notificacao notificacao = new Notificacao();
         
+        String ultimosQuatroDigitos = cartao.getNumeroCartao().substring(cartao.getNumeroCartao().length() - 4);
+
+        notificacao.setTipoNotificacao("Associação de cartão");
+        notificacao.setMensagem("Cartão com final " + ultimosQuatroDigitos + " associado com sucesso");
+        notificacao.setDataNotificacao(LocalDateTime.now());
+
         // Associa o cartão ao cliente
         cliente.associarCartao(cartao);
 
         // Salvar cartão no repositório
         cartaoRepository.save(cartao);
+
+        // Associa a notificação ao cliente
+        cliente.associarNotificacao(notificacao);
+
+        // Salvar notificação no repositório
+        notificacaoRepository.save(notificacao);
 
         // Atualiza o cliente com novo cartão no repositório
         clienteRepository.save(cliente);
@@ -82,59 +96,58 @@ public class ClienteService {
         return cliente;
     }
 
-    public Cliente buscaCliente(int id) {
-        return findCliente(id);
-    }
+    public Cartao cartaoStatus(int id, int idCartao) throws Exception {
+        // Busca cliente e cartão
+        Optional<Cliente> clienteOptional = clienteRepository.findById(id);        
+        Optional<Cartao> cartaoOptional = cartaoRepository.findById(idCartao);
 
-    private Cliente findCliente(int id) {
-        Optional<Cliente> usuario = clienteRepository.findById(id);
-
-        if (usuario.isEmpty())
+        // Confirma a existência do cartão e do cliente
+        if (!clienteOptional.isPresent() || !cartaoOptional.isPresent())  {
             return null;
+        }
+        Cliente cliente = clienteOptional.get();
+        Cartao cartao = cartaoOptional.get();
 
-        return usuario.get();
+        // Confirma associação entre cartão e cliente
+        if (!cliente.getCartoes().contains(cartao)) {
+            throw new Exception("Cartão não está associado a esse cliente");
+        }
+
+        // Muda status do cartão
+        cartao.setEstaAtivado(!cartao.getEstaAtivado());
+
+        // Configura String 'status' para notificação 
+        String status;
+
+        if (cartao.getEstaAtivado()) {
+            status = "ativado";
+        } else {
+            status = "desativado";
+        }
+
+        // Cria a notificação
+        Notificacao notificacao = new Notificacao();
+        
+        String ultimosQuatroDigitos = cartao.getNumeroCartao().substring(cartao.getNumeroCartao().length() - 4);
+
+        notificacao.setTipoNotificacao("Desbloqueio de cartão");
+        notificacao.setMensagem("Cartão com final " + ultimosQuatroDigitos + " está " + status);
+        notificacao.setDataNotificacao(LocalDateTime.now());
+
+        // Salvar cartão com novo status
+        cartaoRepository.save(cartao);
+
+        // Associa a notificação ao cliente
+        cliente.associarNotificacao(notificacao);
+
+        // Salvar notificação no repositório
+        notificacaoRepository.save(notificacao);
+
+        return cartao;
     }
 
-    public boolean validarCPF(String cpf) {
-        cpf = cpf.replaceAll("\\D", "");
-        if (cpf.length() != 11) {
-            return false;
-        }
-        if (cpf.chars().distinct().count() == 1) {
-            return false;
-        }
-        try {
-            int peso = 10;
-            int soma = 0;
-            for (int i = 0; i < 9; i++) {
-                soma += Character.getNumericValue(cpf.charAt(i)) * peso--;
-            }
-
-            int primeiroDigitoVerificador = 11 - (soma % 11);
-            if (primeiroDigitoVerificador >= 10) {
-                primeiroDigitoVerificador = 0;
-            }
-            peso = 11;
-            soma = 0;
-            for (int i = 0; i < 10; i++) {
-                soma += Character.getNumericValue(cpf.charAt(i)) * peso--;
-            }
-
-            int segundoDigitoVerificador = 11 - (soma % 11);
-            if (segundoDigitoVerificador >= 10) {
-                segundoDigitoVerificador = 0;
-            }
-            return (primeiroDigitoVerificador == Character.getNumericValue(cpf.charAt(9)) &&
-                    segundoDigitoVerificador == Character.getNumericValue(cpf.charAt(10)));
-
-        } catch (NumberFormatException e) {
-            return false;
-        }
+    public boolean verificaIdade(LocalDate dataNascimento){
+        int idade = Period.between(dataNascimento, LocalDate.now()).getYears();
+        return idade >= 18;
     }
-
-    public boolean eMaiorDeIdade(LocalDate dataNascimento){
-        return Period.between(dataNascimento, LocalDate.now()).getYears() >= 18;
-    }
-
-    // enviarNotificacaoSobreAssociacaoDeCartao
 }
