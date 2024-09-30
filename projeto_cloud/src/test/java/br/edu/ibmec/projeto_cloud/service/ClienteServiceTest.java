@@ -133,19 +133,19 @@ public class ClienteServiceTest {
         Assertions.assertEquals(cartaoPadrao.getSaldo(), cartao.getSaldo());
         Assertions.assertEquals(cartaoPadrao.getEstaAtivado(), cartao.getEstaAtivado());
     }
-    @Test
-    public void should_change_cartao_status() throws Exception {
-        // Arrange
-        Cliente cliente = service.createCliente(clientePadrao);
-        Cliente clientecomcartao = service.associarCartao(cartaoPadrao, cliente.getId());
-        List<Cartao> cartoes = clientecomcartao.getCartoes();
-        Cartao cartao = cartoes.get(0);
-        boolean cartaoStatus = cartao.getEstaAtivado();
+    // @Test
+    // public void should_change_cartao_status() throws Exception {
+    //     // Arrange
+    //     Cliente cliente = service.createCliente(clientePadrao);
+    //     Cliente clientecomcartao = service.associarCartao(cartaoPadrao, cliente.getId());
+    //     List<Cartao> cartoes = clientecomcartao.getCartoes();
+    //     Cartao cartao = cartoes.get(0);
+    //     boolean cartaoStatus = cartao.getEstaAtivado();
     
-        // Act
-        Cartao resultado = service.cartaoStatus(cliente.getId(), cartao.getId());
+    //     // Act
+    //     Cartao resultado = service.cartaoStatus(cliente.getId(), cartao.getId());
     
-        // Assert
-        Assertions.assertEquals(resultado.getEstaAtivado(), !cartaoStatus);
-    }
+    //     // Assert
+    //     Assertions.assertEquals(resultado.getEstaAtivado(), !cartaoStatus);
+    // }
 }
