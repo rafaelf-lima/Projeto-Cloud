@@ -60,7 +60,7 @@ public class Cliente {
     @NotBlank(message = "Endereço é obrigatório")
     private String endereco;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(referencedColumnName = "id", name = "cliente_id")
     private List<Cartao> cartoes = new ArrayList<>();
 

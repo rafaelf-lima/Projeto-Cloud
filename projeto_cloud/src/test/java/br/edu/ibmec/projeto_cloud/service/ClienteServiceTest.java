@@ -1,7 +1,6 @@
 package br.edu.ibmec.projeto_cloud.service;
 
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,10 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import br.edu.ibmec.projeto_cloud.model.Cartao;
 import br.edu.ibmec.projeto_cloud.model.Cliente;
-import br.edu.ibmec.projeto_cloud.repository.CartaoRepository;
-import br.edu.ibmec.projeto_cloud.repository.ClienteRepository;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -22,11 +20,6 @@ public class ClienteServiceTest {
     @Autowired
     private ClienteService service;
 
-    @Autowired
-    private ClienteRepository clienteRepository;
-
-    @Autowired
-    private CartaoRepository cartaoRepository;
 
     private Cliente clientePadrao;
     private Cartao cartaoPadrao;
@@ -42,39 +35,28 @@ public class ClienteServiceTest {
         clientePadrao.setEndereco("Rua A apto 104");
         clientePadrao.setDataNascimento(LocalDate.parse("2000-04-20"));
 
-        // Salva o cliente no banco de dados
-        clienteRepository.save(clientePadrao);
+
 
         // Cria um cartão padrão associado ao cliente
         cartaoPadrao = new Cartao();
-        cartaoPadrao.setNumeroCartao("1234567812345678");
+        cartaoPadrao.setNumeroCartao("1934567818845678");
         cartaoPadrao.setCvv("123");
         cartaoPadrao.setDataValidade(LocalDate.of(2025, 12, 31));
         cartaoPadrao.setLimite(5000.00);
         cartaoPadrao.setSaldo(5000.00);
         cartaoPadrao.setEstaAtivado(true);
 
-        // Associa o cartão ao cliente
-        clientePadrao.associarCartao(cartaoPadrao);
 
-        // Salva o cartão no banco de dados
-        cartaoRepository.save(cartaoPadrao);
     }    
     
 
     @Test
     public void should_create_cliente() throws Exception {
         // Arrange
-        Cliente cliente = new Cliente();
-        cliente.setNome("João");
-        cliente.setCpf("987.654.321-00");
-        cliente.setEmail("joao@teste.com");
-        cliente.setEndereco("Rua 1 casa B");
-        cliente.setTelefone("(21)12345-6789");
-        cliente.setDataNascimento(LocalDate.of(1990, 1, 1));
+        //Cliente Padrão
 
         // Act
-        Cliente resultado = service.createCliente(cliente);
+        Cliente resultado = service.createCliente(clientePadrao);
         int id = resultado.getId();
 
         // Assert
@@ -85,7 +67,7 @@ public class ClienteServiceTest {
         Assertions.assertNotNull(resultado.getEndereco());
         Assertions.assertNotNull(resultado.getTelefone());
         Assertions.assertNotNull(resultado.getDataNascimento());
-        Assertions.assertEquals(id, cliente.getId());
+        Assertions.assertEquals(id, clientePadrao.getId());
     }
 
     @Test
@@ -93,7 +75,7 @@ public class ClienteServiceTest {
         // Arrange
         Cliente cliente1 = new Cliente();
         cliente1.setNome("João");
-        cliente1.setCpf("584.232.147-53");
+        cliente1.setCpf("123.456.789-09");
         cliente1.setEmail("joao@email.com");
         cliente1.setTelefone("(91)12345-6789");
         cliente1.setEndereco("Rua paulo cesar de andrade 232");
@@ -118,7 +100,7 @@ public class ClienteServiceTest {
         // Arrange
         Cliente cliente = new Cliente();
         cliente.setNome("Joana");
-        cliente.setCpf("123.456.111-11");
+        cliente.setCpf("753.466.181-11");
         cliente.setEmail("joana@teste.com.br");
         cliente.setTelefone("123456888");
         cliente.setEndereco("Rua 2 casa B");
@@ -130,8 +112,25 @@ public class ClienteServiceTest {
         });
     }
 
-    // @Test
-    //     public void should_associar_cartao() {
+    @Test
+        public void should_associar_cartao() throws Exception {
+        // Arrange
+        //Cliente Padrão
+        
+        //Act
+        Cliente cliente = service.createCliente(clientePadrao);
+        Cliente clientecomcartao = service.associarCartao(cartaoPadrao, cliente.getId());
+        List<Cartao> cartoes = clientecomcartao.getCartoes();
+        Cartao cartao = cartoes.get(0);
 
-    // }
+        //Assert
+        Assertions.assertNotNull(cartoes);
+        Assertions.assertEquals(1, cartoes.size());
+        Assertions.assertEquals(cartaoPadrao.getNumeroCartao(), cartao.getNumeroCartao());
+        Assertions.assertEquals(cartaoPadrao.getCvv(), cartao.getCvv());
+        Assertions.assertEquals(cartaoPadrao.getDataValidade(), cartao.getDataValidade());
+        Assertions.assertEquals(cartaoPadrao.getLimite(), cartao.getLimite());
+        Assertions.assertEquals(cartaoPadrao.getSaldo(), cartao.getSaldo());
+        Assertions.assertEquals(cartaoPadrao.getEstaAtivado(), cartao.getEstaAtivado());
+    }
 }
