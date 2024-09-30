@@ -95,7 +95,7 @@ class TransacaoServiceTest {
         transacao2.setDataTransacao(LocalDateTime.parse("2024-08-08T12:50:59"));
         transacao2.setValor(250.55);
         transacao2.setComerciante("Amazon");
-
+        
         // Act
         Transacao resultado1 = service.createTransacao(transacao1,cartao.getId());
 
