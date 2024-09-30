@@ -43,7 +43,6 @@ class TransacaoServiceTest {
         clientePadrao.setEndereco("Rua A apto 104");
         clientePadrao.setDataNascimento(LocalDate.parse("2000-04-20"));
 
-
         // Cria um cartão padrão associado ao cliente
         cartaoPadrao = new Cartao();
         cartaoPadrao.setNumeroCartao("1934567818845678");
@@ -53,7 +52,7 @@ class TransacaoServiceTest {
         cartaoPadrao.setSaldo(5000.00);
         cartaoPadrao.setEstaAtivado(true);
 
-              // Cria um cartão padrão associado ao cliente
+        // Cria um cartão desativado para o cliente
         cartaoPadrao2 = new Cartao();
         cartaoPadrao2.setNumeroCartao("1934367828881234");
         cartaoPadrao2.setCvv("123");
@@ -61,8 +60,6 @@ class TransacaoServiceTest {
         cartaoPadrao2.setLimite(5000.00);
         cartaoPadrao2.setSaldo(5000.00);
         cartaoPadrao2.setEstaAtivado(false);
-
-
     }    
 
 
@@ -82,14 +79,14 @@ class TransacaoServiceTest {
         // Act
         Transacao resultado = service.createTransacao(transacao,cartao.getId());
 
-
         // Assert
         Assertions.assertNotNull(resultado);
         Assertions.assertNotNull(resultado.getDataTransacao());
         Assertions.assertNotNull(resultado.getValor());
         Assertions.assertNotNull(resultado.getComerciante());
-        Assertions.assertEquals(resultado.getId(), resultado.getId());
+        Assertions.assertEquals(resultado.getValor(), 250.55);
     }
+
 
     @Test
     public void should_not_create_duplicate_transacao() throws Exception {
@@ -110,9 +107,9 @@ class TransacaoServiceTest {
         transacao2.setComerciante("Amazon");
 
         String expectedmessage = "Transação duplicada encontrada.";
+
         // Act
         Transacao resultado1 = service.createTransacao(transacao1,cartao.getId());
-
 
         // Assert
         TransacaoException exception = Assertions.assertThrows(TransacaoException.class, () -> {
@@ -121,6 +118,7 @@ class TransacaoServiceTest {
         Assertions.assertEquals(expectedmessage, exception.getMessage());
     }
     
+
     @Test
     public void should_not_accept_high_frequency_transactions() throws Exception {
         // Arrange
@@ -145,6 +143,7 @@ class TransacaoServiceTest {
         transacao3.setComerciante("Banca");
 
         String expectedmessage = "Limite de 3 transações em 2 minutos excedido.";
+
         // Act
         Transacao resultado1 = service.createTransacao(transacao1,cartao.getId());
         Transacao resultado2 = service.createTransacao(transacao2,cartao.getId());
@@ -155,6 +154,8 @@ class TransacaoServiceTest {
         });
         Assertions.assertEquals(expectedmessage, exception.getMessage());
     }
+
+
     @Test
     public void should_not_accept_high_transaction_without_saldo() throws Exception {
         // Arrange
@@ -168,16 +169,16 @@ class TransacaoServiceTest {
         transacao1.setValor(300000000050.55);
         transacao1.setComerciante("Amazon");
 
-
         String expectedmessage = "Saldo insuficiente para a compra";
         
-
         // Act & Assert
         TransacaoException exception = Assertions.assertThrows(TransacaoException.class, () -> {
             service.createTransacao(transacao1, cartao.getId());
         });
         Assertions.assertEquals(expectedmessage, exception.getMessage());
     }
+
+
     @Test
     public void should_not_accept_transaction_with_cartao_desativado() throws Exception {
         // Arrange
@@ -191,10 +192,8 @@ class TransacaoServiceTest {
         transacao1.setValor(350.55);
         transacao1.setComerciante("Amazon");
 
-
         String expectedmessage = "Cartão desativado.";
         
-
         // Act & Assert
         CartaoException exception = Assertions.assertThrows(CartaoException.class, () -> {
             service.createTransacao(transacao1, cartao.getId());

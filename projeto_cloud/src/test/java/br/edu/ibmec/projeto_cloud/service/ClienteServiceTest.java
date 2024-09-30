@@ -13,6 +13,7 @@ import br.edu.ibmec.projeto_cloud.model.Cliente;
 import java.time.LocalDate;
 import java.util.List;
 
+
 @SpringBootTest
 @ActiveProfiles("test")
 public class ClienteServiceTest {
@@ -35,8 +36,6 @@ public class ClienteServiceTest {
         clientePadrao.setEndereco("Rua A apto 104");
         clientePadrao.setDataNascimento(LocalDate.parse("2000-04-20"));
 
-
-
         // Cria um cartão padrão associado ao cliente
         cartaoPadrao = new Cartao();
         cartaoPadrao.setNumeroCartao("1934567818845678");
@@ -45,8 +44,6 @@ public class ClienteServiceTest {
         cartaoPadrao.setLimite(5000.00);
         cartaoPadrao.setSaldo(5000.00);
         cartaoPadrao.setEstaAtivado(true);
-
-
     }    
     
 
