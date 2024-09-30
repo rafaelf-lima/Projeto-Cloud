@@ -57,24 +57,24 @@ public class ClienteControllerTest {
 
     @Test
     public void should_create_cliente() throws Exception {
-        // Criação do objeto Cliente preenchido corretamente
+        
         Cliente cliente = new Cliente();
-        cliente.setId(10);  // Atribuímos um ID fictício para teste
-        cliente.setNome("João Silva");  // Deve ter pelo menos 3 caracteres
-        cliente.setCpf("123.456.789-09");  // CPF no formato correto
-        cliente.setDataNascimento(LocalDate.of(1990, 1, 1));  // Data de nascimento no passado
-        cliente.setEmail("joao.silva@example.com");  // Email válido
-        cliente.setTelefone("(11)98765-4321");  // Telefone no formato correto
-        cliente.setEndereco("Rua Exemplo, 123");  // Endereço obrigatório
+        cliente.setId(10);  
+        cliente.setNome("João Silva"); 
+        cliente.setCpf("123.456.789-09");  
+        cliente.setDataNascimento(LocalDate.of(1990, 1, 1));  
+        cliente.setEmail("joao.silva@example.com"); 
+        cliente.setTelefone("(11)98765-4321"); 
+        cliente.setEndereco("Rua Exemplo, 123");  
 
-        // Simula o comportamento do serviço
+        
         given(this.clienteService.createCliente(any(Cliente.class))).willReturn(cliente);
 
-        // Envia o objeto via POST e valida o status e o JSON de retorno
+        
         this.mvc.perform(post("/cliente")
             .content(this.mapper.writeValueAsString(cliente))
             .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isCreated())  // Espera um status 201 Created
+            .andExpect(status().isCreated())  
             .andExpect(jsonPath("$.id", is(10)))
             .andExpect(jsonPath("$.nome", is("João Silva")))
             .andExpect(jsonPath("$.cpf", is("123.456.789-09")))
@@ -85,16 +85,16 @@ public class ClienteControllerTest {
 
     @Test
     public void should_get_cliente() throws Exception {
-        // Criação do cliente simulado
+       
         Cliente cliente = new Cliente();
         cliente.setId(1);
         cliente.setNome("João");
         cliente.setEmail("joao@example.com");
 
-        // Simula a busca do cliente no repositório
+       
         given(this.clienteRepository.findById(1)).willReturn(Optional.of(cliente));
 
-        // Faz a requisição GET e verifica o retorno
+        
         this.mvc.perform(MockMvcRequestBuilders.get("/cliente/1")
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(MockMvcResultMatchers.status().isOk())
@@ -104,10 +104,10 @@ public class ClienteControllerTest {
 
     @Test
     public void should_get_cliente_with_not_found() throws Exception {
-        // Simula a ausência do cliente no repositório
+        
         given(this.clienteRepository.findById(1)).willReturn(Optional.empty());
 
-        // Faz a requisição GET e verifica o status de Not Found (404)
+       
         this.mvc.perform(MockMvcRequestBuilders.get("/cliente/1")
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(MockMvcResultMatchers.status().isNotFound());
